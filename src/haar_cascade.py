@@ -35,7 +35,7 @@ def detect_mouth(img:np.ndarray, face:Tuple)->List:
 
     return mouth
 
-def detect_teeth(img:np.ndarray, mouth:Touple)->List:
+def detect_teeth(img:np.ndarray, mouth:Tuple)->List:
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     (x,y,w,h) = mouth
 
