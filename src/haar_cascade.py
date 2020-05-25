@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from typing import List
+from typing import Tuple, List
 
 face_cascade = cv2.CascadeClassifier('../haar_cascades/haarcascade_frontalface_default.xml')
 eye_cascade = cv2.CascadeClassifier('../haar_cascades/haarcascade_eye_tree_eyeglasses.xml')
@@ -15,48 +15,32 @@ def detect_faces(img:np.ndarray)-> List:
     
     return faces_detected
 
-def detect_smiles(img:np.ndarray, faces:list, check_mouth_open:bool = False)->bool:
+def detect_eyes(img:np.ndarray, face:Tuple) -> List:
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    (x,y,w,h) = face
 
-    
-    eyes_detected = False
-    mouth_detected = False
-    # teeth_detected = not check_mouth_open
-    smiles = []
+    roi_gray = gray[y:y+h, x:x+w]
 
-    for (x,y,w,h) in faces:
-        roi_gray = gray[y:y+h, x:x+w]
-        roi_color = img[y:y+h, x:x+w]
-        
-        eyes=eye_cascade.detectMultiScale(roi_gray, 1.05, 20)
-        if len(eyes) > 1:
-            eyes_detected = True
-        # for (ex, ey, ew, eh) in eyes:
-        #     cv2.rectangle(roi_color, (ex, ey), (ex+ew,ey+eh), (0, 255,0), 2)
-        
-        mouth = smile_cascade.detectMultiScale(roi_gray, 1.8,25)
-        if len(mouth) > 0:
-            mouth_detected = True
-        # for (ex, ey, ew, eh) in mouth:
-        #     cv2.rectangle(roi_color, (ex, ey), (ex+ew,ey+eh), (0, 0,255), 2)
+    eyes=eye_cascade.detectMultiScale(roi_gray, 1.05, 20)
 
-        if eyes_detected and mouth_detected:
-            smiles.append(
-                {
-                    'face':(x,y,w,h),
-                    'eyes':eyes,
-                    'mouth':mouth
-                    })    
+    return eyes
 
-            # if check_mouth_open:
-            #     roi_gray_mouth = roi_gray[ey:ey+eh, ex:ex+ew]
-            #     roi_color_mouth = roi_color[ey:ey+eh, ex:ex+ew]
+def detect_mouth(img:np.ndarray, face:Tuple)->List:
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    (x,y,w,h) = face
 
-            #     teeth = teeth_cascade.detectMultiScale(roi_gray_mouth, 1.1, 1)
-            #     if len(teeth) != 0:
-            #         teeth_detected = True
-                    
-            #         for (tx,ty,tw,th) in teeth:
-            #             cv2.rectangle(roi_gray_mouth, (tx, ty), (tx+tw,ty+th), (0, 255,255), 2)
-    
-    return smiles
+    roi_gray = gray[y:y+h, x:x+w]
+
+    mouth = smile_cascade.detectMultiScale(roi_gray, 1.8,25)
+
+    return mouth
+
+def detect_teeth(img:np.ndarray, mouth:Touple)->List:
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    (x,y,w,h) = mouth
+
+    roi_gray = gray[y:y+h, x:x+w]
+
+    teeth = teeth_cascade.detectMultiScale(roi_gray, 1.1, 1)
+
+    return teeth
