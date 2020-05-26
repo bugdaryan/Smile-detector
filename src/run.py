@@ -1,9 +1,11 @@
 import cv2
 import numpy as np
-import time
 import sys
 import haar_cascade as cascade
 from datetime import datetime
+import os.path
+
+output_dir = "../images"
 
 class SmileDetectStatus:
     def __init__(self):
@@ -61,7 +63,7 @@ class Detector:
 
         if self.status.begin_take_photo:
             print('Taking image')
-            cv2.imwrite(f'../images/img_{now_str}.jpg', self.image.captured)
+            cv2.imwrite(f'{output_dir}/img_{now_str}.jpg', self.image.captured)
             self.status.completed = True
             self.status.restart = True
         
@@ -94,6 +96,9 @@ class Detector:
 
 
 def main():
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
     cap = cv2.VideoCapture(0)
 
     while True:
