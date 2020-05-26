@@ -14,6 +14,8 @@ class SmileDetectStatus:
         self.smile_detected = False
         self.restart = False
         self.completed = False
+        self.photo_taken = False
+        self.splash_screen = 0
         self.no_smile_detect = 0
         self.smile_detect = 0
 
@@ -61,13 +63,21 @@ class Detector:
             for (ex, ey, ew, eh) in mouth:
                 cv2.rectangle(face, (ex,ey), (ex+ew, ey+eh), color)
 
-        if self.status.begin_take_photo:
+        if self.status.begin_take_photo and not self.status.photo_taken:
             print('Taking image')
             cv2.imwrite(f'{output_dir}/img_{now_str}.jpg', self.image.captured)
+            self.status.photo_taken = True
+        
+        if self.status.photo_taken:
+            self.image.annotated[:] = 255
+            self.status.splash_screen += 1
+
+        if self.status.splash_screen > 5:
             self.status.completed = True
             self.status.restart = True
-        
-        if eyes_detected and mouth_detected:
+
+
+        if eyes_detected and mouth_detected and not self.status.photo_taken:
             self.status.smile_detect += 1
             self.status.no_smile_detect = 0
 
@@ -85,7 +95,7 @@ class Detector:
             if self.status.no_smile_detect > 50:
                 self.status.restart = True
             
-        if not self.status.begin_take_photo or len(faces) == 0:
+        if not self.status.begin_take_photo or len(faces) == 0 or self.status.photo_taken:
             cv2.imshow('Smile detector :)', self.image.annotated)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 self.image.cap.release()
